@@ -1,6 +1,5 @@
 package fr.knightmar.knightLauncher;
 
-import fr.flowarg.flowcompat.Platform;
 import fr.theshark34.openlauncherlib.LaunchException;
 import fr.theshark34.openlauncherlib.external.ExternalLaunchProfile;
 import fr.theshark34.openlauncherlib.external.ExternalLauncher;

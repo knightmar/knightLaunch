@@ -33,15 +33,11 @@ public class Update {
 
                     @Override
                     public void step(Step step) {
-                        Platform.runLater(() -> {
-                            MainGui.setStatusLabel(step);
-                        });
+                        Platform.runLater(() -> MainGui.setStatusLabel(step));
                     }
 
                     public void onFileDownloaded(Path path) {
-                        Platform.runLater(() -> {
-                            MainGui.setFileLabel(path.getFileName().toString());
-                        });
+                        Platform.runLater(() -> MainGui.setFileLabel(path.getFileName().toString()));
                     }
 
                     @Override

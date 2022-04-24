@@ -24,7 +24,7 @@ public class MainGui extends Application {
 
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         stage = primaryStage;
         ObservableList<String> options =
                 FXCollections.observableArrayList(
@@ -35,7 +35,7 @@ public class MainGui extends Application {
 
         Line line = new Line(0, 0, 100, 100);
         Button btn1 = new Button("Launch the game");
-        ComboBox comboBox = new ComboBox(options);
+        ComboBox<String> comboBox = new ComboBox<>(options);
         status_label.setTranslateY(120);
         status_label.setTranslateX(50);
 
@@ -67,7 +67,7 @@ public class MainGui extends Application {
             // TODO Auto-generated method stub
             final Path launcherDir = GameDirGenerator.createGameDir("knightLauncher", true);
             try {
-                Update.update(launcherDir, comboBox.getValue().toString());
+                Update.update(launcherDir, comboBox.getValue());
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -100,7 +100,7 @@ public class MainGui extends Application {
 
 
     public static void setStatusLabel(Step step) {
-        String text = "";
+        String text;
         switch (step) {
             case DL_LIBS -> text = "Téléchargement des librairies en cours ...";
             case END -> {
