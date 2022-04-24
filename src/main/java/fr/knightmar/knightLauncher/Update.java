@@ -14,7 +14,7 @@ import java.text.DecimalFormat;
 import java.util.Objects;
 
 public class Update {
-    public static void update(Path launcherDir, String version) {
+    public static void update(Path launcherDir, String version, String pseudo) {
 
         Thread t = new Thread(() -> {
             if (Objects.equals(version, "1.12.2") || Objects.equals(version, "1.13.2") || Objects.equals(version, "1.16.5")) {
@@ -59,7 +59,7 @@ public class Update {
 
                 try {
                     updater.update(launcherDir);
-                    Launch.launch(version);
+                    Launch.launch(version, pseudo);
 
                 } catch (Exception e) {
                     e.printStackTrace();

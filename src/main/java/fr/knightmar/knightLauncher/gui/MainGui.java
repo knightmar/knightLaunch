@@ -2,8 +2,11 @@ package fr.knightmar.knightLauncher.gui;
 
 import fr.flowarg.flowupdater.download.Step;
 import fr.knightmar.knightLauncher.Update;
+import fr.knightmar.knightLauncher.Utils;
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -20,7 +23,7 @@ public class MainGui extends Application {
     public static Label file_label = new Label("file");
     public static Label percent_label = new Label("percent");
     public static ProgressBar progressBar = new ProgressBar();
-    public static TextField pseudoField = new TextField("Pseudo");
+    public static TextField pseudoField = new TextField();
 
 
     @Override
@@ -34,7 +37,8 @@ public class MainGui extends Application {
                 );
 
         Line line = new Line(0, 0, 100, 100);
-        Button btn1 = new Button("Launch the game");
+        Button launch_button = new Button("Launch the game");
+        launch_button.setDisable(true);
         ComboBox<String> comboBox = new ComboBox<>(options);
         status_label.setTranslateY(120);
         status_label.setTranslateX(50);
@@ -52,34 +56,36 @@ public class MainGui extends Application {
         progressBar.setTranslateX(-90);
         setProgressBar(0.75);
 
-        btn1.setTranslateY(150);
-        btn1.setTranslateX(200);
+        launch_button.setTranslateY(150);
+        launch_button.setTranslateX(200);
 
 
         comboBox.setValue(options.get(0));
 
+        pseudoField.setPromptText("Pseudo");
+        pseudoField.setMaxWidth(100);
+        pseudoField.setTranslateX(200);
+        pseudoField.setTranslateY(100);
+        pseudoField.textProperty().addListener((observable, oldValue, newValue) ->
+                launch_button.setDisable(!Utils.checkPseudo(newValue)));
 
-        pseudoField.setOnAction(arg -> {
-
-        });
-
-        btn1.setOnAction(arg0 -> {
+        launch_button.setOnAction(arg0 -> {
             // TODO Auto-generated method stub
             final Path launcherDir = GameDirGenerator.createGameDir("knightLauncher", true);
             try {
-                Update.update(launcherDir, comboBox.getValue());
+                Update.update(launcherDir, comboBox.getValue(), pseudoField.getText());
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            btn1.setDisable(true);
+            launch_button.setDisable(true);
 
         });
         StackPane root = new StackPane();
         root.setMinSize(600, 400);
         root.autosize();
-        root.getChildren().addAll(btn1, comboBox, status_label, file_label, progressBar, percent_label, line);
+        root.getChildren().addAll(launch_button, comboBox, status_label, file_label, progressBar, percent_label, line, pseudoField);
         Scene scene = new Scene(root, 600, 400);
 
 
@@ -134,7 +140,7 @@ public class MainGui extends Application {
         progressBar.setProgress(value);
     }
 
-    public static Stage getStage(){
+    public static Stage getStage() {
         return stage;
     }
 
