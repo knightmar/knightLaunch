@@ -1,5 +1,6 @@
 package fr.knightmar.knightLauncher.gui;
 
+import fr.flowarg.flowupdater.download.Step;
 import fr.knightmar.knightLauncher.Update;
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
 import javafx.application.Application;
@@ -11,11 +12,10 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.net.URL;
 import java.nio.file.Path;
 
 public class MainGui extends Application {
+    public static Stage stage;
     public static Label status_label = new Label("statuts");
     public static Label file_label = new Label("file");
     public static Label percent_label = new Label("percent");
@@ -25,6 +25,7 @@ public class MainGui extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        stage = primaryStage;
         ObservableList<String> options =
                 FXCollections.observableArrayList(
                         "1.12.2",
@@ -38,12 +39,11 @@ public class MainGui extends Application {
         status_label.setTranslateY(120);
         status_label.setTranslateX(50);
 
-        file_label.setTranslateY(120);
-        file_label.setTranslateX(-90);
+        file_label.setTranslateY(180);
+        file_label.setTranslateX(-100);
 
         percent_label.setTranslateY(120);
         percent_label.setTranslateX(-250);
-
 
 
         progressBar.setTranslateY(150);
@@ -77,7 +77,7 @@ public class MainGui extends Application {
 
         });
         StackPane root = new StackPane();
-        root.setMinSize(600,400);
+        root.setMinSize(600, 400);
         root.autosize();
         root.getChildren().addAll(btn1, comboBox, status_label, file_label, progressBar, percent_label, line);
         Scene scene = new Scene(root, 600, 400);
@@ -92,19 +92,38 @@ public class MainGui extends Application {
         }
 
 
-        primaryStage.setResizable(false);
-        primaryStage.setTitle("knightLauncher");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        stage.setResizable(false);
+        stage.setTitle("knightLauncher");
+        stage.setScene(scene);
+        stage.show();
     }
 
 
-    public static void setStatusLabel(String text) {
+    public static void setStatusLabel(Step step) {
+        String text = "";
+        switch (step) {
+            case DL_LIBS -> text = "Téléchargement des librairies en cours ...";
+            case END -> {
+                text = "Fin des téléchargements";
+                getStage().close();
+            }
+
+            case READ -> text = "Lecture des fichiers";
+            case MODS -> text = "Téléchargement des mods en cours";
+            case MOD_PACK -> text = "Téléchargement des modspacks";
+            case DL_ASSETS -> text = "Téléchargement des assets";
+            case MOD_LOADER -> text = "Téléchargement du Modloader";
+            case INTEGRATION -> text = "Intégration en cours";
+            case EXTERNAL_FILES -> text = "Téléchargement des fichiers ecternes";
+            case EXTRACT_NATIVES -> text = "Extraction des natives";
+            case POST_EXECUTIONS -> text = "étapes finales";
+            default -> text = "étape inconnue";
+        }
         status_label.setText(text);
     }
 
     public static void setFileLabel(String text) {
-        file_label.setText(text);
+        file_label.setText("Fichier en cours : " + text);
     }
 
     public static void setPercentLabel(String text) {
@@ -113,6 +132,10 @@ public class MainGui extends Application {
 
     public static void setProgressBar(Double value) {
         progressBar.setProgress(value);
+    }
+
+    public static Stage getStage(){
+        return stage;
     }
 
 

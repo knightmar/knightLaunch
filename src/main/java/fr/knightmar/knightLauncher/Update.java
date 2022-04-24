@@ -34,7 +34,7 @@ public class Update {
                     @Override
                     public void step(Step step) {
                         Platform.runLater(() -> {
-                            MainGui.setStatusLabel(String.valueOf(step));
+                            MainGui.setStatusLabel(step);
                         });
                     }
 
