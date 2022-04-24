@@ -1,0 +1,10 @@
+.root
+{
+    -fx-font-family : "serief";
+    -fx-background1 : rgb(225,227,2255);
+}
+.button {
+    -fx-font : 14px "serief";
+    -fx-padding : 10;
+    -fx-background-color : #CCFF99;
+}
