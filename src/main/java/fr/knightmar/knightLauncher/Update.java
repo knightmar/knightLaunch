@@ -10,12 +10,12 @@ import fr.knightmar.knightLauncher.gui.MainGui;
 import javafx.application.Platform;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Objects;
 
 public class Update {
-    public static void update(Path launcherDir, String version) throws Exception {
+    public static void update(Path launcherDir, String version) {
+
         Thread t = new Thread(() -> {
             if (Objects.equals(version, "1.12.2") || Objects.equals(version, "1.13.2") || Objects.equals(version, "1.16.5")) {
                 VanillaVersion vanillaVersion = new VanillaVersion.VanillaVersionBuilder()
@@ -49,7 +49,6 @@ public class Update {
                         double progress = (double) info.getDownloadedBytes() / info.getTotalToDownloadBytes();
 
                         Platform.runLater(() -> {
-                            System.out.println(progress);
                             MainGui.setPercentLabel(decimalFormat.format(progress * 100.0d) + "%");
                             MainGui.setProgressBar(progress);
                         });
