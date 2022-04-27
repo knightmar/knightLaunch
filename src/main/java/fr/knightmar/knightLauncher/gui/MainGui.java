@@ -5,8 +5,6 @@ import fr.knightmar.knightLauncher.Update;
 import fr.knightmar.knightLauncher.Utils;
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -24,22 +22,59 @@ public class MainGui extends Application {
     public static Label percent_label = new Label("percent");
     public static ProgressBar progressBar = new ProgressBar();
     public static TextField pseudoField = new TextField();
+    public static final Path launcherDir = GameDirGenerator.createGameDir("knightLauncher", true);
+
+    public static void close() {
+        getStage().close();
+    }
 
 
     @Override
     public void start(Stage primaryStage) {
         stage = primaryStage;
-        ObservableList<String> options =
-                FXCollections.observableArrayList(
-                        "1.12.2",
-                        "1.13.2",
-                        "1.16.5"
-                );
+        ObservableList<String> options = FXCollections.observableArrayList();
+
+
+        if (Path.of(launcherDir.toAbsolutePath() + "/" + "1.12.2").toFile().exists()) {
+            options.add("✅" + "1.12.2");
+            System.out.println("1.12.2 existe");
+        } else {
+            options.add("1.12.2");
+            System.out.print("1.12.2 n'existe pas");
+        }
+        if (Path.of(launcherDir.toAbsolutePath() + "/" + "1.13.2").toFile().exists()) {
+            options.add("✅" + "1.13.2");
+            System.out.println("1.13.2 existe");
+        } else {
+            options.add("1.13.2");
+            System.out.print("1.13.2 n'existe pas");
+        }
+        if (Path.of(launcherDir.toAbsolutePath() + "/" + "1.16.5").toFile().exists()) {
+            options.add("✅" + "1.16.5");
+            System.out.println("1.16.5 existe");
+        } else {
+            options.add("1.16.5");
+            System.out.print("1.16.5 n'existe pas");
+        }
+
+        System.out.println(options);
+
 
         Line line = new Line(0, 0, 100, 100);
+
+
         Button launch_button = new Button("Launch the game");
         launch_button.setDisable(true);
+        Button update_button = new Button("update the current version");
+
+
         ComboBox<String> comboBox = new ComboBox<>(options);
+        comboBox.getSelectionModel().selectFirst();
+        comboBox.setId("comboBox");
+
+        comboBox.setTranslateX(150);
+
+
         status_label.setTranslateY(120);
         status_label.setTranslateX(50);
 
@@ -59,9 +94,6 @@ public class MainGui extends Application {
         launch_button.setTranslateY(150);
         launch_button.setTranslateX(200);
 
-
-        comboBox.setValue(options.get(0));
-
         pseudoField.setPromptText("Pseudo");
         pseudoField.setMaxWidth(100);
         pseudoField.setTranslateX(200);
@@ -69,24 +101,25 @@ public class MainGui extends Application {
         pseudoField.textProperty().addListener((observable, oldValue, newValue) ->
                 launch_button.setDisable(!Utils.checkPseudo(newValue)));
 
-        launch_button.setOnAction(arg0 -> {
-            // TODO Auto-generated method stub
-            final Path launcherDir = GameDirGenerator.createGameDir("knightLauncher", true);
-            try {
-                Update.update(launcherDir, comboBox.getValue(), pseudoField.getText());
+        comboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            update_button.setDisable(newValue.contains("✅"));
+        });
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
+        update_button.setOnAction(event -> Update.update(launcherDir, comboBox.getValue(), pseudoField.getText(), false));
+
+        launch_button.setOnAction(event -> {
+            Update.update(launcherDir, comboBox.getValue(), pseudoField.getText(), true);
             launch_button.setDisable(true);
 
         });
+
+
         StackPane root = new StackPane();
-        root.setMinSize(600, 400);
-        root.autosize();
-        root.getChildren().addAll(launch_button, comboBox, status_label, file_label, progressBar, percent_label, line, pseudoField);
-        Scene scene = new Scene(root, 600, 400);
+        root.setMinSize(1000, 600);
+        root.setId("stack-pane");
+        root.getChildren().addAll(launch_button, comboBox, status_label, file_label, progressBar, percent_label, pseudoField, update_button);
+        Scene scene = new Scene(root, 1000, 600);
 
 
         try {
@@ -111,7 +144,6 @@ public class MainGui extends Application {
             case DL_LIBS -> text = "Téléchargement des librairies en cours ...";
             case END -> {
                 text = "Fin des téléchargements";
-                getStage().close();
             }
 
             case READ -> text = "Lecture des fichiers";

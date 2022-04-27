@@ -8,3 +8,17 @@
     -fx-padding : 10;
     -fx-background-color : #CCFF99;
 }
+#comboBox {
+    -fx-font : 14px "serief";
+    -fx-padding : 3;
+    -fx-border-width: 1px;
+    -fx-border-color: #000000;
+    -fx-border-radius: 3;
+}
+
+#stack-pane{
+    -fx-background-image: url("../images/background.jpg");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: 600 400;
+    -fx-background-position: center center;
+}

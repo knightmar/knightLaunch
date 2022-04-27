@@ -14,8 +14,11 @@ import java.text.DecimalFormat;
 import java.util.Objects;
 
 public class Update {
-    public static void update(Path launcherDir, String version, String pseudo) {
+    public static void update(Path launcherDir, String version, String pseudo, boolean launch) {
+        launcherDir = Path.of(launcherDir.toAbsolutePath() + "/" + version);
+        System.out.println(launcherDir);
 
+        Path finalLauncherDir = launcherDir;
         Thread t = new Thread(() -> {
             if (Objects.equals(version, "1.12.2") || Objects.equals(version, "1.13.2") || Objects.equals(version, "1.16.5")) {
                 VanillaVersion vanillaVersion = new VanillaVersion.VanillaVersionBuilder()
@@ -33,6 +36,10 @@ public class Update {
 
                     @Override
                     public void step(Step step) {
+                        if ((step == Step.END && launch)) {
+                            Platform.runLater(MainGui::close);
+                        }
+
                         Platform.runLater(() -> MainGui.setStatusLabel(step));
                     }
 
@@ -58,8 +65,10 @@ public class Update {
                         .build();
 
                 try {
-                    updater.update(launcherDir);
-                    Launch.launch(version, pseudo);
+                    updater.update(finalLauncherDir);
+                    if (launch) {
+                        Launch.launch(version, pseudo);
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
