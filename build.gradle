@@ -1,5 +1,8 @@
 plugins {
+    id 'idea'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'java'
+    id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.9'
 
 }
@@ -16,7 +19,8 @@ repositories {
     }
     maven {
         url 'https://litarvan.github.io/maven'
-    }}
+    }
+}
 
 dependencies {
     implementation 'fr.flowarg:openlauncherlib:3.2.4'
@@ -29,11 +33,18 @@ javafx {
     version = 12
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing']
 }
-
-//application {
-//    getMainClass().set('fr.knightmar.knightLauncher.Main')
-//}
-
 compileJava {
     options.encoding = "UTF-8"
+}
+application {
+    getMainClass().set('fr.knightmar.knightLauncher.gui.MainGui')
+}
+
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'fr.knightmar.knightLauncher.gui.MainGui'
+        )
+    }
 }

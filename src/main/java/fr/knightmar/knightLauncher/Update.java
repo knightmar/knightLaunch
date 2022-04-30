@@ -11,69 +11,98 @@ import javafx.application.Platform;
 
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.Objects;
 
 public class Update {
     public static void update(Path launcherDir, String version, String pseudo, boolean launch) {
-        launcherDir = Path.of(launcherDir.toAbsolutePath() + "/" + version);
-        System.out.println(launcherDir);
+        String finalVersion;
+
+        if (version.contains("1.12.2")) {
+            finalVersion = "1.12.2";
+        } else if (version.contains("1.13.2")) {
+            finalVersion = "1.13.2";
+        } else if (version.contains("1.16.5")) {
+            finalVersion = "1.16.5";
+        } else {
+            finalVersion = "1.12.2";
+        }
+        launcherDir = Path.of(launcherDir.toAbsolutePath() + "/" + finalVersion);
 
         Path finalLauncherDir = launcherDir;
+
+
         Thread t = new Thread(() -> {
-            if (Objects.equals(version, "1.12.2") || Objects.equals(version, "1.13.2") || Objects.equals(version, "1.16.5")) {
-                VanillaVersion vanillaVersion = new VanillaVersion.VanillaVersionBuilder()
-                        .withName(version)
-                        .withSnapshot(false)
-                        .build();
 
 
-                IProgressCallback callback = new IProgressCallback() {
-                    private final DecimalFormat decimalFormat = new DecimalFormat("#.#");
-
-                    @Override
-                    public void init(ILogger logger) {
-                    }
-
-                    @Override
-                    public void step(Step step) {
-                        if ((step == Step.END && launch)) {
-                            Platform.runLater(MainGui::close);
-                        }
-
-                        Platform.runLater(() -> MainGui.setStatusLabel(step));
-                    }
-
-                    public void onFileDownloaded(Path path) {
-                        Platform.runLater(() -> MainGui.setFileLabel(path.getFileName().toString()));
-                    }
-
-                    @Override
-                    public void update(DownloadList.DownloadInfo info) {
-                        double progress = (double) info.getDownloadedBytes() / info.getTotalToDownloadBytes();
-
-                        Platform.runLater(() -> {
-                            MainGui.setPercentLabel(decimalFormat.format(progress * 100.0d) + "%");
-                            MainGui.setProgressBar(progress);
-                        });
-                    }
-                };
+            System.out.println("finalVersion : " + finalVersion);
 
 
-                final FlowUpdater updater = new FlowUpdater.FlowUpdaterBuilder()
-                        .withVanillaVersion(vanillaVersion)
-                        .withProgressCallback(callback)
-                        .build();
+            VanillaVersion vanillaVersion = new VanillaVersion.VanillaVersionBuilder()
+                    .withName(finalVersion)
+                    .withSnapshot(false)
+                    .build();
 
-                try {
-                    updater.update(finalLauncherDir);
-                    if (launch) {
-                        Launch.launch(version, pseudo);
-                    }
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+            IProgressCallback callback = new IProgressCallback() {
+                private final DecimalFormat decimalFormat = new DecimalFormat("#.#");
+
+                @Override
+                public void init(ILogger logger) {
                 }
+
+                @Override
+                public void step(Step step) {
+
+                    Platform.runLater(() -> {
+                        try {
+                            MainGui.setStatusLabelWithSteps(step);
+                            if ((step == Step.END && launch)) {
+                                Platform.runLater(() -> {
+                                    System.out.println("appel close");
+                                    MainGui.setStatusLabel("Attentez le lancement du jeu ...");
+                                    try {
+                                        MainGui.close();
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                });
+                            }
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+
+                public void onFileDownloaded(Path path) {
+                    Platform.runLater(() -> MainGui.setFileLabel(path.getFileName().toString()));
+                }
+
+                @Override
+                public void update(DownloadList.DownloadInfo info) {
+                    double progress = (double) info.getDownloadedBytes() / info.getTotalToDownloadBytes();
+
+                    Platform.runLater(() -> {
+                        MainGui.setPercentLabel(decimalFormat.format(progress * 100.0d) + "%");
+                        MainGui.setProgressBar(progress);
+                    });
+                }
+            };
+
+
+            final FlowUpdater updater = new FlowUpdater.FlowUpdaterBuilder()
+                    .withVanillaVersion(vanillaVersion)
+                    .withProgressCallback(callback)
+                    .build();
+
+            try {
+                updater.update(finalLauncherDir);
+                if (launch) {
+                    Launch.launch(finalVersion, pseudo);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
         });
         t.start();
     }

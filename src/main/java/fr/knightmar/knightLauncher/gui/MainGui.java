@@ -9,8 +9,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Line;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import java.nio.file.Path;
@@ -23,8 +22,15 @@ public class MainGui extends Application {
     public static ProgressBar progressBar = new ProgressBar();
     public static TextField pseudoField = new TextField();
     public static final Path launcherDir = GameDirGenerator.createGameDir("knightLauncher", true);
+    public static Button launch_button = new Button("Launch");
+    public static Button update_button = new Button("Update");
+    public static ComboBox<String> comboBox;
 
-    public static void close() {
+    public static CheckBox checkBox = new CheckBox("Play in cracked mod");
+
+    public static void close() throws InterruptedException {
+        System.out.println("Closing");
+        Thread.sleep(10000);
         getStage().close();
     }
 
@@ -32,6 +38,78 @@ public class MainGui extends Application {
     @Override
     public void start(Stage primaryStage) {
         stage = primaryStage;
+        setUI();
+
+        Pane root = new Pane();
+        root.setMinSize(1000, 600);
+        root.setId("stack-pane");
+        root.getChildren().addAll(launch_button, comboBox, status_label, file_label, progressBar, percent_label, pseudoField, update_button);
+        Scene scene = new Scene(root, 1000, 600);
+
+        try {
+
+            root.getStylesheets().add("css/main.css");
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        stage.centerOnScreen();
+        stage.setResizable(false);
+        stage.setTitle("knightLauncher");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+
+    public static void setStatusLabelWithSteps(Step step) throws InterruptedException {
+        String text;
+        switch (step) {
+            case DL_LIBS -> text = "Téléchargement des librairies en cours ...";
+            case END -> {
+                text = "Téléchargement terminé !";
+            }
+
+            case READ -> text = "Lecture des fichiers";
+            case MODS -> text = "Téléchargement des mods en cours";
+            case MOD_PACK -> text = "Téléchargement des modspacks";
+            case DL_ASSETS -> text = "Téléchargement des assets";
+            case MOD_LOADER -> text = "Téléchargement du Modloader";
+            case INTEGRATION -> text = "Intégration en cours";
+            case EXTERNAL_FILES -> text = "Téléchargement des fichiers ecternes";
+            case EXTRACT_NATIVES -> text = "Extraction des natives";
+            case POST_EXECUTIONS -> text = "étapes finales";
+            default -> text = "étape inconnue";
+        }
+        status_label.setText(text);
+    }
+
+    public static void setStatusLabel(String text) {
+        status_label.setText(text);
+    }
+
+    public static void setFileLabel(String text) {
+        file_label.setText("Fichier en cours : " + text);
+    }
+
+    public static void setPercentLabel(String text) {
+        percent_label.setText(text);
+    }
+
+    public static void setProgressBar(Double value) {
+        progressBar.setProgress(value);
+    }
+
+    public static Stage getStage() {
+        return stage;
+    }
+
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    public static void setUI() {
         ObservableList<String> options = FXCollections.observableArrayList();
 
 
@@ -57,47 +135,37 @@ public class MainGui extends Application {
             System.out.print("1.16.5 n'existe pas");
         }
 
-        System.out.println(options);
-
-
-        Line line = new Line(0, 0, 100, 100);
-
-
-        Button launch_button = new Button("Launch the game");
         launch_button.setDisable(true);
-        Button update_button = new Button("update the current version");
+        launch_button.setTranslateX(900 - launch_button.getWidth() - 10);
+        launch_button.setTranslateY(520 - launch_button.getHeight() - 10);
 
 
-        ComboBox<String> comboBox = new ComboBox<>(options);
+        comboBox = new ComboBox<>(options);
         comboBox.getSelectionModel().selectFirst();
         comboBox.setId("comboBox");
-
-        comboBox.setTranslateX(150);
-
-
-        status_label.setTranslateY(120);
-        status_label.setTranslateX(50);
-
-        file_label.setTranslateY(180);
-        file_label.setTranslateX(-100);
-
-        percent_label.setTranslateY(120);
-        percent_label.setTranslateX(-250);
+        comboBox.setTranslateX(600 - comboBox.getWidth() - 10);
+        comboBox.setTranslateY(520 - comboBox.getHeight() - 10);
 
 
-        progressBar.setTranslateY(150);
-        progressBar.setMinSize(400, 20);
+        update_button = new Button("Update");
+        update_button.setTranslateX(750 - update_button.getWidth() - 10);
+        update_button.setTranslateY(520 - update_button.getHeight() - 10);
+        update_button.setDisable(comboBox.getValue().contains("✅"));
+
+
+        progressBar.setMinSize(500, 20);
         progressBar.setProgress(0);
-        progressBar.setTranslateX(-90);
-        setProgressBar(0.75);
+        progressBar.setTranslateX(50 - progressBar.getWidth() - 10);
+        progressBar.setTranslateY(550 - progressBar.getHeight() - 10);
+        progressBar.setId("progressBar");
 
-        launch_button.setTranslateY(150);
-        launch_button.setTranslateX(200);
 
         pseudoField.setPromptText("Pseudo");
         pseudoField.setMaxWidth(100);
-        pseudoField.setTranslateX(200);
-        pseudoField.setTranslateY(100);
+        pseudoField.setTranslateX(605 - pseudoField.getWidth() - 10);
+        pseudoField.setTranslateY(570 - pseudoField.getHeight() - 10);
+
+
         pseudoField.textProperty().addListener((observable, oldValue, newValue) ->
                 launch_button.setDisable(!Utils.checkPseudo(newValue)));
 
@@ -111,74 +179,19 @@ public class MainGui extends Application {
         launch_button.setOnAction(event -> {
             Update.update(launcherDir, comboBox.getValue(), pseudoField.getText(), true);
             launch_button.setDisable(true);
+            System.out.println(comboBox.getValue());
 
         });
 
 
-        StackPane root = new StackPane();
-        root.setMinSize(1000, 600);
-        root.setId("stack-pane");
-        root.getChildren().addAll(launch_button, comboBox, status_label, file_label, progressBar, percent_label, pseudoField, update_button);
-        Scene scene = new Scene(root, 1000, 600);
+        percent_label.setTranslateX(300 - percent_label.getWidth() - 10);
+        percent_label.setTranslateY(530 - percent_label.getHeight() - 10);
 
+        status_label.setTranslateX(380 - status_label.getWidth() - 10);
+        status_label.setTranslateY(580 - status_label.getHeight() - 10);
 
-        try {
-
-            root.getStylesheets().add("css/main.css");
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
-
-        stage.setResizable(false);
-        stage.setTitle("knightLauncher");
-        stage.setScene(scene);
-        stage.show();
-    }
-
-
-    public static void setStatusLabel(Step step) {
-        String text;
-        switch (step) {
-            case DL_LIBS -> text = "Téléchargement des librairies en cours ...";
-            case END -> {
-                text = "Fin des téléchargements";
-            }
-
-            case READ -> text = "Lecture des fichiers";
-            case MODS -> text = "Téléchargement des mods en cours";
-            case MOD_PACK -> text = "Téléchargement des modspacks";
-            case DL_ASSETS -> text = "Téléchargement des assets";
-            case MOD_LOADER -> text = "Téléchargement du Modloader";
-            case INTEGRATION -> text = "Intégration en cours";
-            case EXTERNAL_FILES -> text = "Téléchargement des fichiers ecternes";
-            case EXTRACT_NATIVES -> text = "Extraction des natives";
-            case POST_EXECUTIONS -> text = "étapes finales";
-            default -> text = "étape inconnue";
-        }
-        status_label.setText(text);
-    }
-
-    public static void setFileLabel(String text) {
-        file_label.setText("Fichier en cours : " + text);
-    }
-
-    public static void setPercentLabel(String text) {
-        percent_label.setText(text);
-    }
-
-    public static void setProgressBar(Double value) {
-        progressBar.setProgress(value);
-    }
-
-    public static Stage getStage() {
-        return stage;
-    }
-
-
-    public static void main(String[] args) {
-        launch(args);
+        file_label.setTranslateX(60 - file_label.getWidth() - 10);
+        file_label.setTranslateY(580 - file_label.getHeight() - 10);
     }
 
 

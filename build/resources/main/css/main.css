@@ -5,8 +5,8 @@
 }
 .button {
     -fx-font : 14px "serief";
-    -fx-padding : 10;
-    -fx-background-color : #CCFF99;
+    -fx-padding : 30;
+    -fx-background-color : #39c50b;
 }
 #comboBox {
     -fx-font : 14px "serief";
@@ -17,8 +17,13 @@
 }
 
 #stack-pane{
-    -fx-background-image: url("../images/background.jpg");
+    -fx-background-image: url("../images/background.png");
     -fx-background-repeat: no-repeat;
-    -fx-background-size: 600 400;
-    -fx-background-position: center center;
+    -fx-background-size: 1000 500;
+    -fx-background-position: left top;
+}
+#progressBar{
+    -fx-background-color: #dedede;
+    -fx-progress-color: #00ff20;
+
 }
