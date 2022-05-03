@@ -5,6 +5,7 @@ import fr.knightmar.knightLauncher.Update;
 import fr.knightmar.knightLauncher.Utils;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
+import fr.theshark34.openlauncherlib.util.Saver;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,6 +19,7 @@ import javafx.stage.Stage;
 import java.nio.file.Path;
 
 public class MainGui extends Application {
+
     public static String ms_access_token = "";
 
     public static String ms_refresh_token = "";
@@ -36,6 +38,9 @@ public class MainGui extends Application {
 
     public static Button login_button_ms = new Button("Login with Microsoft");
 
+    private static final Saver saver = new Saver(launcherDir.resolve("config.properties"));
+
+
     public static void close() throws InterruptedException {
         System.out.println("Closing");
         Thread.sleep(10000);
@@ -45,6 +50,8 @@ public class MainGui extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        saver.load();
+
         stage = primaryStage;
         setUI();
 
@@ -55,10 +62,8 @@ public class MainGui extends Application {
         Scene scene = new Scene(root, 1000, 600);
 
         try {
-
             root.getStylesheets().add("css/main.css");
         } catch (Exception e) {
-
             e.printStackTrace();
         }
 
@@ -92,26 +97,6 @@ public class MainGui extends Application {
         status_label.setText(text);
     }
 
-    public static void setStatusLabel(String text) {
-        status_label.setText(text);
-    }
-
-    public static void setFileLabel(String text) {
-        file_label.setText("Fichier en cours : " + text);
-    }
-
-    public static void setPercentLabel(String text) {
-        percent_label.setText(text);
-    }
-
-    public static void setProgressBar(Double value) {
-        progressBar.setProgress(value);
-    }
-
-    public static Stage getStage() {
-        return stage;
-    }
-
 
     public static void main(String[] args) {
         launch(args);
@@ -143,7 +128,7 @@ public class MainGui extends Application {
             System.out.print("1.16.5 n'existe pas");
         }
 
-        checkBox.setTranslateX(700);
+        checkBox.setTranslateX(645);
         checkBox.setTranslateY(570);
 
         ImageView view = new ImageView(new Image("images/ms.png"));
@@ -151,16 +136,14 @@ public class MainGui extends Application {
         view.setPreserveRatio(true);
         login_button_ms.setGraphic(view);
         login_button_ms.setId("login_button_ms");
-        login_button_ms.setTranslateX(670);
+        login_button_ms.setTranslateX(640);
         login_button_ms.setTranslateY(510);
         login_button_ms.setOnAction(event -> {
             authenticateMS();
         });
 
 
-        launch_button.setDisable(true);
-        launch_button.setTranslateX(900 - launch_button.getWidth() - 10);
-        launch_button.setTranslateY(400 - launch_button.getHeight() - 10);
+
 
 
         choice_versions = new ComboBox<>(versions);
@@ -171,8 +154,8 @@ public class MainGui extends Application {
 
 
         update_button = new Button("Update");
-        update_button.setTranslateX(900 - update_button.getWidth() - 10);
-        update_button.setTranslateY(300 - update_button.getHeight() - 10);
+        update_button.setTranslateX(820 - update_button.getWidth() - 10);
+        update_button.setTranslateY(570 - update_button.getHeight() - 10);
         update_button.setDisable(choice_versions.getValue().contains("✅"));
 
 
@@ -187,6 +170,14 @@ public class MainGui extends Application {
         pseudoField.setMaxWidth(100);
         pseudoField.setTranslateX(605 - 70 - pseudoField.getWidth() - 10);
         pseudoField.setTranslateY(570 - pseudoField.getHeight() - 10);
+        if (saver.get("pseudo") != null) {
+            pseudoField.setText(saver.get("pseudo"));
+        }
+
+        launch_button.setDisable(true);
+        launch_button.setDisable(!Utils.checkPseudo(launch_button.getText()));
+        launch_button.setTranslateX(920 - launch_button.getWidth() - 10);
+        launch_button.setTranslateY(570 - launch_button.getHeight() - 10);
 
 
         pseudoField.textProperty().addListener((observable, oldValue, newValue) ->
@@ -202,6 +193,8 @@ public class MainGui extends Application {
         launch_button.setOnAction(event -> {
             Update.update(launcherDir, choice_versions.getValue(), pseudoField.getText(), true);
             launch_button.setDisable(true);
+            saver.set("pseudo", pseudoField.getText());
+            saver.save();
             System.out.println(choice_versions.getValue());
 
         });
@@ -234,6 +227,30 @@ public class MainGui extends Application {
         });
         loginThread.setName("LoginThread");
         loginThread.start();
+    }
+
+    public static void setStatusLabel(String text) {
+        status_label.setText(text);
+    }
+
+    public static void setFileLabel(String text) {
+        file_label.setText("Fichier en cours : " + text);
+    }
+
+    public static void setPercentLabel(String text) {
+        percent_label.setText(text);
+    }
+
+    public static void setProgressBar(Double value) {
+        progressBar.setProgress(value);
+    }
+
+    public static Stage getStage() {
+        return stage;
+    }
+
+    public static Saver getSaver() {
+        return saver;
     }
 }
 

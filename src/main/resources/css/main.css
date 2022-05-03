@@ -19,7 +19,7 @@
 #stack-pane{
     -fx-background-image: url("../images/background.png");
     -fx-background-repeat: no-repeat;
-    -fx-background-size: 1000 500;
+    -fx-background-size: 1000 600;
     -fx-background-position: left top;
 }
 #progressBar{
