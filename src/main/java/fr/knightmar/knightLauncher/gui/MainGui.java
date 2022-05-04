@@ -14,12 +14,12 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.nio.file.Path;
 
 public class MainGui extends Application {
-
     public static String ms_access_token = "";
 
     public static String ms_refresh_token = "";
@@ -34,11 +34,15 @@ public class MainGui extends Application {
     public static Button update_button = new Button("Update");
     public static ComboBox<String> choice_versions;
 
-    public static CheckBox checkBox = new CheckBox(" or play in crack mod");
+    public static CheckBox crack_mod = new CheckBox(" or play in crack mod");
 
-    public static Button login_button_ms = new Button("Login with Microsoft");
-
+    public static Button login_button_ms = new Button("");
+    public static Button logout_button = new Button("Déconnection");
     private static final Saver saver = new Saver(launcherDir.resolve("config.properties"));
+    private static final Text login_with_text = new Text("Login with :");
+    private static final Text or_text = new Text("or : ");
+
+    private static boolean is_logged = false;
 
 
     public static void close() throws InterruptedException {
@@ -50,7 +54,12 @@ public class MainGui extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+
         saver.load();
+
+        if (saver.get("pseudo") != null) {
+            is_logged = true;
+        }
 
         stage = primaryStage;
         setUI();
@@ -58,7 +67,7 @@ public class MainGui extends Application {
         Pane root = new Pane();
         root.setMinSize(1000, 600);
         root.setId("stack-pane");
-        root.getChildren().addAll(launch_button, choice_versions, status_label, file_label, progressBar, percent_label, pseudoField, update_button, checkBox, login_button_ms);
+        root.getChildren().addAll(launch_button, choice_versions, status_label, file_label, progressBar, percent_label, pseudoField, update_button, crack_mod, login_button_ms, login_with_text, or_text, logout_button);
         Scene scene = new Scene(root, 1000, 600);
 
         try {
@@ -103,6 +112,13 @@ public class MainGui extends Application {
     }
 
     public static void setUI() {
+        if (is_logged) {
+            pseudoField.setDisable(true);
+            login_button_ms.setDisable(true);
+            crack_mod.setDisable(true);
+            logout_button.setDisable(false);
+        }
+
         ObservableList<String> versions = FXCollections.observableArrayList();
 
 
@@ -128,22 +144,57 @@ public class MainGui extends Application {
             System.out.print("1.16.5 n'existe pas");
         }
 
-        checkBox.setTranslateX(645);
-        checkBox.setTranslateY(570);
+
+        login_with_text.setTranslateX(45);
+        login_with_text.setTranslateY(150);
+        login_with_text.getStyleClass().add("login_texts");
+
 
         ImageView view = new ImageView(new Image("images/ms.png"));
         view.setFitHeight(30d);
         view.setPreserveRatio(true);
         login_button_ms.setGraphic(view);
         login_button_ms.setId("login_button_ms");
-        login_button_ms.setTranslateX(640);
-        login_button_ms.setTranslateY(510);
+        login_button_ms.setTranslateX(40);
+        login_button_ms.setTranslateY(170);
         login_button_ms.setOnAction(event -> {
             authenticateMS();
         });
 
+        or_text.setTranslateX(45);
+        or_text.setTranslateY(240);
+        or_text.getStyleClass().add("login_texts");
 
+        crack_mod.setTranslateX(45);
+        crack_mod.setTranslateY(260);
+        crack_mod.setOnAction(event -> {
+            if (crack_mod.isSelected()) {
+                login_button_ms.setDisable(true);
+                pseudoField.setDisable(false);
+            } else {
+                login_button_ms.setDisable(false);
+                pseudoField.setDisable(true);
+            }
+        });
+        crack_mod.setId("crack_mod");
 
+        pseudoField.setPromptText("Pseudo");
+        pseudoField.setMaxWidth(100);
+        pseudoField.setTranslateX(45);
+        pseudoField.setTranslateY(300);
+        if (saver.get("pseudo") != null) {
+            pseudoField.setText(saver.get("pseudo"));
+        }
+
+        logout_button.setOnAction(event -> {
+            if (is_logged) {
+                is_logged = false;
+                saver.remove("pseudo");
+                login_button_ms.setDisable(false);
+                pseudoField.setDisable(false);
+                crack_mod.setDisable(false);
+            }
+        });
 
 
         choice_versions = new ComboBox<>(versions);
@@ -165,14 +216,6 @@ public class MainGui extends Application {
         progressBar.setTranslateY(550 - progressBar.getHeight() - 10);
         progressBar.setId("progressBar");
 
-
-        pseudoField.setPromptText("Pseudo");
-        pseudoField.setMaxWidth(100);
-        pseudoField.setTranslateX(605 - 70 - pseudoField.getWidth() - 10);
-        pseudoField.setTranslateY(570 - pseudoField.getHeight() - 10);
-        if (saver.get("pseudo") != null) {
-            pseudoField.setText(saver.get("pseudo"));
-        }
 
         launch_button.setDisable(true);
         launch_button.setDisable(!Utils.checkPseudo(launch_button.getText()));
