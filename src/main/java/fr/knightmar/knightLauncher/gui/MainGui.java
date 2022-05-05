@@ -1,9 +1,9 @@
 package fr.knightmar.knightLauncher.gui;
 
 import fr.flowarg.flowupdater.download.Step;
+import fr.flowarg.mcmsal.AuthInfo;
 import fr.knightmar.knightLauncher.Update;
 import fr.knightmar.knightLauncher.Utils;
-import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
 import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
 import fr.theshark34.openlauncherlib.util.Saver;
 import javafx.application.Application;
@@ -20,6 +20,8 @@ import javafx.stage.Stage;
 import java.nio.file.Path;
 
 public class MainGui extends Application {
+    public static AuthInfo authInfo;
+
     public static String ms_access_token = "";
 
     public static String ms_refresh_token = "";
@@ -33,6 +35,7 @@ public class MainGui extends Application {
     public static Button launch_button = new Button("Launch");
     public static Button update_button = new Button("Update");
     public static ComboBox<String> choice_versions;
+    public static Pane root;
 
     public static CheckBox crack_mod = new CheckBox(" or play in crack mod");
 
@@ -54,7 +57,6 @@ public class MainGui extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-
         saver.load();
 
         if (saver.get("pseudo") != null) {
@@ -64,7 +66,7 @@ public class MainGui extends Application {
         stage = primaryStage;
         setUI();
 
-        Pane root = new Pane();
+        root = new Pane();
         root.setMinSize(1000, 600);
         root.setId("stack-pane");
         root.getChildren().addAll(launch_button, choice_versions, status_label, file_label, progressBar, percent_label, pseudoField, update_button, crack_mod, login_button_ms, login_with_text, or_text, logout_button);
@@ -88,10 +90,7 @@ public class MainGui extends Application {
         String text;
         switch (step) {
             case DL_LIBS -> text = "Téléchargement des librairies en cours ...";
-            case END -> {
-                text = "Téléchargement terminé !";
-            }
-
+            case END -> text = "Téléchargement terminé !";
             case READ -> text = "Lecture des fichiers";
             case MODS -> text = "Téléchargement des mods en cours";
             case MOD_PACK -> text = "Téléchargement des modspacks";
@@ -158,7 +157,11 @@ public class MainGui extends Application {
         login_button_ms.setTranslateX(40);
         login_button_ms.setTranslateY(170);
         login_button_ms.setOnAction(event -> {
-            authenticateMS();
+            try {
+                authenticateMS();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         });
 
         or_text.setTranslateX(45);
@@ -226,15 +229,16 @@ public class MainGui extends Application {
         pseudoField.textProperty().addListener((observable, oldValue, newValue) ->
                 launch_button.setDisable(!Utils.checkPseudo(newValue)));
 
-        choice_versions.valueProperty().addListener((observable, oldValue, newValue) -> {
-            update_button.setDisable(newValue.contains("✅"));
+        choice_versions.valueProperty().addListener((observable, oldValue, newValue) -> update_button.setDisable(newValue.contains("✅")));
+
+
+        update_button.setOnAction(event -> {
+            Update.update(launcherDir, choice_versions.getValue(), pseudoField.getText(), false, true);
+
         });
 
-
-        update_button.setOnAction(event -> Update.update(launcherDir, choice_versions.getValue(), pseudoField.getText(), false));
-
         launch_button.setOnAction(event -> {
-            Update.update(launcherDir, choice_versions.getValue(), pseudoField.getText(), true);
+            Update.update(launcherDir, choice_versions.getValue(), pseudoField.getText(), true, true);
             launch_button.setDisable(true);
             saver.set("pseudo", pseudoField.getText());
             saver.save();
@@ -253,23 +257,15 @@ public class MainGui extends Application {
         file_label.setTranslateY(580 - file_label.getHeight() - 10);
     }
 
-    public static void authenticateMS() {
-        Thread loginThread = new Thread(() -> {
-            MicrosoftAuthenticator authenticator = new MicrosoftAuthenticator();
-            authenticator.loginWithAsyncWebview().whenComplete((response, error) -> {
-                if (error != null) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Erreur");
-                    alert.setContentText(error.getMessage());
-                    alert.show();
-                    return;
-                }
-                ms_access_token = response.getAccessToken();
-                ms_refresh_token = response.getRefreshToken();
-            });
-        });
-        loginThread.setName("LoginThread");
-        loginThread.start();
+    public static void authenticateMS() throws InterruptedException {
+            AuthInfo info = LoginMSWebview.login();
+            if (info != null) {
+                authInfo = info;
+            } else {
+                System.out.print("Connection interompue");
+            }
+        System.out.println(authInfo);
+
     }
 
     public static void setStatusLabel(String text) {

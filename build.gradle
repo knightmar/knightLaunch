@@ -25,10 +25,10 @@ repositories {
 dependencies {
     implementation 'fr.litarvan:openauth:1.1.2'
     implementation 'fr.flowarg:openlauncherlib:3.2.4'
-    implementation 'fr.flowarg:flowupdater:1.6.0' // needed
+    implementation 'fr.flowarg:flowupdater:1.6.0'
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'fr.flowarg:flowmultitools:1.4.0'
-    implementation 'de.jensd:fontawesomefx-fontawesome:4.7.0-9.1.2'
+    implementation 'fr.flowarg:mcmsal:1.0.0'
 }
 
 javafx {

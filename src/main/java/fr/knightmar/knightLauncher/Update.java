@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 
 public class Update {
-    public static void update(Path launcherDir, String version, String pseudo, boolean launch) {
+    public static void update(Path launcherDir, String version, String pseudo, boolean launch, boolean cracked) {
         String finalVersion;
 
         if (version.contains("1.12.2")) {
@@ -96,7 +96,7 @@ public class Update {
             try {
                 updater.update(finalLauncherDir);
                 if (launch) {
-                    Launch.launch(finalVersion, pseudo);
+                    Launch.launch(finalVersion, pseudo, cracked);
                 }
 
             } catch (Exception e) {

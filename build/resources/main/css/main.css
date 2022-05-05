@@ -31,3 +31,12 @@
     -fx-background-color: #D8D8D8;
     -fx-font-weight: bold;
 }
+.login_texts{
+    -fx-font-weight: bold;
+    -fx-font-size: 20px;
+}
+#crack_mod{
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-text-fill: #000000;
+}
