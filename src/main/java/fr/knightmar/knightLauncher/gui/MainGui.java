@@ -34,6 +34,7 @@ public class MainGui extends Application {
     public static final Path launcherDir = GameDirGenerator.createGameDir("knightLauncher", true);
     public static Button launch_button = new Button("Launch");
     public static Button update_button = new Button("Update");
+    public static Button test_button = new Button("Test");
     public static ComboBox<String> choice_versions;
     public static Pane root;
 
@@ -69,7 +70,7 @@ public class MainGui extends Application {
         root = new Pane();
         root.setMinSize(1000, 600);
         root.setId("stack-pane");
-        root.getChildren().addAll(launch_button, choice_versions, status_label, file_label, progressBar, percent_label, pseudoField, update_button, crack_mod, login_button_ms, login_with_text, or_text, logout_button);
+        root.getChildren().addAll(launch_button, choice_versions, status_label, file_label, progressBar, percent_label, pseudoField, update_button, crack_mod, login_button_ms, login_with_text, or_text, logout_button, test_button);
         Scene scene = new Scene(root, 1000, 600);
 
         try {
@@ -84,7 +85,6 @@ public class MainGui extends Application {
         stage.setScene(scene);
         stage.show();
     }
-
 
     public static void setStatusLabelWithSteps(Step step) throws InterruptedException {
         String text;
@@ -113,8 +113,8 @@ public class MainGui extends Application {
     public static void setUI() {
         if (is_logged) {
             pseudoField.setDisable(true);
-            login_button_ms.setDisable(true);
-            crack_mod.setDisable(true);
+            login_button_ms.setDisable(false);
+            crack_mod.setDisable(false);
             logout_button.setDisable(false);
         }
 
@@ -188,15 +188,25 @@ public class MainGui extends Application {
         if (saver.get("pseudo") != null) {
             pseudoField.setText(saver.get("pseudo"));
         }
+        pseudoField.setDisable(true);
 
         logout_button.setOnAction(event -> {
             if (is_logged) {
                 is_logged = false;
                 saver.remove("pseudo");
+                saver.remove("token");
+                saver.remove("uuid");
                 login_button_ms.setDisable(false);
-                pseudoField.setDisable(false);
                 crack_mod.setDisable(false);
             }
+        });
+        logout_button.setTranslateX(45);
+        logout_button.setTranslateY(330);
+
+        test_button.setTranslateX(45);
+        test_button.setTranslateY(350);
+        test_button.setOnAction(event -> {
+            System.out.println(authInfo.getUsername());
         });
 
 
@@ -258,14 +268,7 @@ public class MainGui extends Application {
     }
 
     public static void authenticateMS() throws InterruptedException {
-            AuthInfo info = LoginMSWebview.login();
-            if (info != null) {
-                authInfo = info;
-            } else {
-                System.out.print("Connection interompue");
-            }
-        System.out.println(authInfo);
-
+        LoginMSWebview.login();
     }
 
     public static void setStatusLabel(String text) {
@@ -290,6 +293,19 @@ public class MainGui extends Application {
 
     public static Saver getSaver() {
         return saver;
+    }
+
+    public static void setAuthInfo(AuthInfo currentAuthInfo) {
+        System.out.println("setAuthInfo : " + currentAuthInfo);
+        authInfo = currentAuthInfo;
+        saver.set("pseudo", authInfo.getUsername());
+        saver.set("token", authInfo.getToken());
+        saver.set("uuid", authInfo.getUUID().toString());
+        saver.save();
+        is_logged = true;
+    }
+    public static void setFocus() {
+        stage.requestFocus();
     }
 }
 

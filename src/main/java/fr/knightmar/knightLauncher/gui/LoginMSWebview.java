@@ -12,36 +12,28 @@ import java.util.function.Consumer;
 
 public class LoginMSWebview {
     public static AuthInfo authInfo;
-    private static final Stage anotherStage = new Stage();
+    private static final Stage login_stage = new Stage();
     private static Pane root;
-    private static Thread current_thread;
+    private static JFXAuth.JFXAuthCallback callback;
 
-    public static AuthInfo login() throws InterruptedException {
+
+    public static void login() {
         root = new Pane();
-        Scene anotherScene = new Scene(root);
-        anotherStage.setScene(anotherScene);
-        anotherStage.show();
-        current_thread = Thread.currentThread();
-        current_thread.setName("current thread");
-        Thread login_thread = new Thread(() -> {
-            try {
-                showLogin();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-        login_thread.start();
-        System.out.println(current_thread.getName());
+        Scene anotherScene = new Scene(root, 600, 600);
+        root.setMaxSize(600, 600);
+        login_stage.setScene(anotherScene);
+        login_stage.show();
 
-        System.out.println(authInfo.getUsername());
-        return authInfo;
-
-
+        try {
+            showLogin();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void showLogin() throws InterruptedException {
-        current_thread.join();
-        JFXAuth.authenticateWithWebView(new JFXAuth.JFXAuthCallback() {
+        System.out.println("showLogin");
+        callback = new JFXAuth.JFXAuthCallback() {
 
             @Override
             public void beforeAuth(WebView webView) {
@@ -51,12 +43,16 @@ public class LoginMSWebview {
             @Override
             public void webViewCanBeClosed(WebView webView) {
                 root.getChildren().remove(webView);
+                login_stage.close();
             }
 
             @Override
             public Consumer<AuthInfo> onAuthFinished() {
-                // another actions
-                return (info) -> authInfo = info;
+                return (info) -> {
+                    authInfo = info;
+                    MainGui.setAuthInfo(authInfo);
+                    MainGui.setFocus();
+                };
             }
 
             @Override
@@ -66,13 +62,14 @@ public class LoginMSWebview {
 
             @Override
             public double prefWidth() {
-                return 405;
+                return 600;
             }
 
             @Override
             public double prefHeight() {
-                return 410;
+                return 600;
             }
-        });
+        };
+        JFXAuth.authenticateWithWebView(callback);
     }
 }
